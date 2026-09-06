@@ -56,6 +56,8 @@
   const timeMode=document.getElementById('time-mode');
   const lightTime=document.getElementById('light-time');
   let customHour=12;
+  // A text field guarantees 24-hour display regardless of browser locale.
+  function validLightTime(){return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(lightTime.value);}
 
   // The surface is a wavy 3D mesh at Y = 15. The depth buffer selects
   // the wave closest to the camera, avoiding jumps between multiple
@@ -86,7 +88,7 @@
     const customTime=timeMode.value==='custom';
     const parts=lightTime.value.split(':').map(Number);
     // Keep the last valid setting while a time field is temporarily empty.
-    if(customTime && /^\d{2}:\d{2}$/.test(lightTime.value))customHour=parts[0]+parts[1]/60;
+    if(customTime && validLightTime())customHour=parts[0]+parts[1]/60;
     const hour = customTime ? customHour : date.getHours() + date.getMinutes()/60
       + date.getSeconds()/3600 + date.getMilliseconds()/3600000;
     if(!customTime)lightTime.value=String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0');
@@ -734,13 +736,23 @@
   let redrawNeeded=true;
   function changeLightingTime(){
     lightTime.disabled=timeMode.value!=='custom';
-    if(!lightTime.disabled && !/^\d{2}:\d{2}$/.test(lightTime.value))return;
+    if(!lightTime.disabled && !validLightTime())return;
     updateDaylight(new Date());
     redrawNeeded=true;
     revealControls();
   }
   timeMode.addEventListener('change',changeLightingTime);
   lightTime.addEventListener('input',changeLightingTime);
+  lightTime.addEventListener('change',()=>{
+    // Accept compact numeric entry on mobile keyboards, then always show HH:mm.
+    const match=lightTime.value.match(/^(\d{1,2}):?(\d{2})$/);
+    if(match)lightTime.value=match[1].padStart(2,'0')+':'+match[2];
+    if(!validLightTime()){
+      const minutes=Math.round(customHour*60);
+      lightTime.value=String(Math.floor(minutes/60)).padStart(2,'0')+':'+String(minutes%60).padStart(2,'0');
+    }
+    changeLightingTime();
+  });
   setSharkCount(sharkCountInput.value);
   sharkCountInput.addEventListener('input',event=>setSharkCount(event.target.value));
   const pointer=new T.Vector2();

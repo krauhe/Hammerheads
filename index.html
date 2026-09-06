@@ -47,7 +47,7 @@
             <option value="clock">Local clock</option>
             <option value="custom">Custom time</option>
           </select>
-          <input id="light-time" type="time" value="12:00" aria-label="Time of day" disabled>
+          <input id="light-time" type="text" inputmode="numeric" maxlength="5" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" value="12:00" placeholder="HH:mm" title="24-hour time (00:00–23:59)" aria-label="Time of day, 24-hour format HH:mm" autocomplete="off" spellcheck="false" disabled>
         </div>
       </nav>
     </footer>
