@@ -1,7 +1,7 @@
-# Lokale browserkontroller og billeder indgår ikke i udgivelsen.
+# Local browser checks and screenshots are excluded from the release.
 validation/
 
-# Lokale editor- og systemfiler.
+# Local editor and system files.
 .vscode/
 .idea/
 .DS_Store

@@ -1,51 +1,52 @@
-# Hammerhajer · Det blå dyb
+# Hammerheads · The Blue Deep
 
-En interaktiv 3D-pauseskærm med hammerhajer i et dybblåt hav. Bølger, lysstråler, svømning og modeller tegnes direkte i browseren med Three.js. Alle nødvendige filer ligger i projektet, så scenen også virker uden internet.
+An interactive 3D screensaver with hammerhead sharks in a deep blue ocean. Waves, sunbeams, swimming and shark models are rendered directly in the browser using Three.js. All required files are included, so the scene also works offline.
 
-## Start
+## Getting started
 
-1. Download projektet som ZIP, eller klon repositoryet.
-2. Pak alle filerne ud i samme mappe.
-3. Åbn `index.html` i Chrome eller Edge med grafikacceleration slået til.
+1. Download the project as a ZIP file or clone the repository.
+2. Extract all files into the same folder.
+3. Open `index.html` in Chrome or Edge with graphics acceleration enabled.
 
-Der kræves ingen installation, server eller build-trin. Det er en pauseskærm i browseren; den installerer sig ikke som Windows-pauseskærm eller skrivebordsbaggrund.
+No installation, server or build step is required. This is a browser screensaver; it does not install itself as a Windows screensaver or desktop wallpaper.
 
-## Betjening
+## Controls
 
-1. **Fuldskærm:** Klik på knappen, tryk F eller dobbeltklik på det tomme hav. Esc forlader fuldskærm.
-2. **Pause:** Klik på Pause eller tryk mellemrum.
-3. **Svømmehastighed:** Justér skyderen med hastighedsikonet.
-4. **Antal hajer:** Vælg 0–40 med skyderen Hajer. Nogle svømmer uden for synsfeltet.
-5. **Skub:** Hold venstre museknap nede på en haj for at skubbe den længere ind i vandet.
-6. **Træk:** Hold højre museknap nede på en haj for at trække den nærmere. Bevæg samtidig musen for at styre til siderne.
-7. **Drej:** Tag fat ved hoved, hale eller finner. Kraft nær kropsmidten flytter primært hajen; kraft længere fra midten drejer også kroppen.
-8. **Touch:** En finger flytter hajen i skærmens plan og kan også dreje den.
+1. **Fullscreen:** Click the button, press F or double-click the open water. Press Esc to exit fullscreen.
+2. **Pause:** Click Pause or press Space. Repeat to resume.
+3. **Swimming speed:** Adjust the slider with the speed icon.
+4. **Shark count:** Select 0–40 using the Sharks slider. Some sharks may swim outside the field of view.
+5. **Push:** Hold the left mouse button on a shark to push it deeper into the water.
+6. **Pull:** Hold the right mouse button on a shark to pull it closer. Move the mouse to steer sideways at the same time.
+7. **Turn:** Grab the head, tail or fins. Force near the body centre mainly moves the shark; force farther from the centre also rotates it.
+8. **Touch:** Drag with one finger to move a shark in the screen plane and turn it.
 
-Hajerne giver elastisk efter og beholder lidt fart og rotation efter slip. De kan også flyttes under pause. Betjeningen skjules efter inaktivitet og vises igen ved mus, berøring eller tastatur.
+Sharks follow with elastic motion and retain some momentum and rotation after release. You can also move them while paused. Controls fade out after inactivity and reappear with mouse, touch or keyboard input.
 
-## Hav og lys
+## Ocean and lighting
 
-Lyset følger computerens lokale ur og bliver rødorange ved lave solvinkler. Den visuelle døgnrytme bruger solopgang kl. 06, højeste sol kl. 12 og solnedgang kl. 18. Den beregner ikke solens position ud fra geografisk placering eller årstid.
+Lighting follows your computer's local clock and turns orange-red at low sun angles. The visual day cycle uses sunrise at 06:00, the highest sun at 12:00 and sunset at 18:00. It does not calculate the sun's position from your location or the season.
 
-Overfladens refleksion og brydning afhænger af synsvinklen, bølgens hældning og vandets brydningsindeks. Modellerne af himmel, vandmiljø og lysstråler er visuelle forenklinger. Se [den udførlige beskrivelse](LAES-MIG.md).
+Surface reflection and refraction depend on the viewing angle, wave slope and the refractive index of water. The sky, underwater environment and sunbeams are simplified visual models. See the [detailed guide](GUIDE.md).
 
-## Filer
+## Files
 
-| Fil | Indhold |
+| File | Contents |
 | --- | --- |
-| `index.html` | Siden og betjeningen |
-| `ocean.css` | Layout og udseende |
-| `ocean.js` | Hajmodeller, animation, fysik, lys og interaktion |
-| `three.min.js` | Lokal Three.js r160 |
-| `THREE-LICENSE` | MIT-licensen for Three.js |
-| `LAES-MIG.md` | Brugervejledning og tekniske afgrænsninger |
+| `index.html` | Page and controls |
+| `ocean.css` | Layout and appearance |
+| `ocean.js` | Shark models, animation, physics, lighting and interaction |
+| `three.min.js` | Local Three.js r160 library |
+| `THREE-LICENSE` | MIT licence for Three.js |
+| `GUIDE.md` | User guide and technical limitations |
+| `LICENSE` | GPLv3 licence for this project |
 
-Scenen er lydløs og foretager ingen netkald. En skjult fane holder pause med at tegne. Hvis systemet er indstillet til reduceret bevægelse, starter scenen på pause.
+The scene is silent and makes no network requests. A hidden browser tab stops rendering. If your system requests reduced motion, the scene starts paused.
 
-## Licens
+## Licence
 
-Hammerhajer er open source under **GNU General Public License v3.0 (GPLv3)**, samme licens som T1D Simulator. Se [LICENSE](LICENSE) for de fulde vilkår.
+Hammerheads is open source under the **GNU General Public License v3.0 (GPLv3)**, the same licence as T1D Simulator. See [LICENSE](LICENSE) for the full terms.
 
 Copyright © 2026 Kristian R. Harreby.
 
-Det medfølgende Three.js-bibliotek har sin egen MIT-licens, som er bevaret i [THREE-LICENSE](THREE-LICENSE).
+The bundled Three.js library retains its own MIT licence in [THREE-LICENSE](THREE-LICENSE).

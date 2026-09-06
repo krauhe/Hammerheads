@@ -1,11 +1,11 @@
 /*
  * SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 Kristian R. Harreby. Licensvilkår findes i LICENSE.
+ * Copyright (C) 2026 Kristian R. Harreby. See LICENSE for terms.
  *
- * Det blå dyb: en selvstændig, uendelig WebGL-scene med modellerede hammerhajer.
- * Three.js ligger lokalt. Ingen billeder, netkald, server eller installation kræves.
- * Hajernes geometri genbruges. Vand og svømning beregnes på grafikkortet, så
- * hukommelsesforbruget er stabilt, også når siden står åben i mange timer.
+ * The Blue Deep: a standalone, continuous WebGL scene with modelled hammerheads.
+ * Three.js is local. No images, network requests, server or installation are needed.
+ * Shark geometry is reused. Water and swimming are calculated on the GPU,
+ * keeping memory use stable even when the page stays open for hours.
  */
 (() => {
   'use strict';
@@ -19,7 +19,7 @@
     document.body.classList.remove('immersed');
   }
   if (!window.THREE) {
-    showError('3D-biblioteket mangler. Behold three.min.js i samme mappe som index.html.');
+    showError('The 3D library is missing. Keep three.min.js in the same folder as index.html.');
     return;
   }
   const T = window.THREE;
@@ -27,7 +27,7 @@
   try {
     renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
   } catch (error) {
-    showError('Browseren kunne ikke starte 3D. Prøv at åbne index.html i Chrome eller Edge med grafikacceleration slået til.');
+    showError('The browser could not start 3D. Open index.html in Chrome or Edge with graphics acceleration enabled.');
     return;
   }
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
@@ -49,9 +49,9 @@
   rim.position.set(-7, 16, -30);
   scene.add(rim);
 
-  // Overfladen er et bølgende 3D-net ved Y = 15. Dybdebufferen bestemmer,
-  // hvilken bølge der er nærmest kameraet; det undgår spring mellem flere
-  // mulige skæringspunkter, når man ser næsten vandret langs overfladen.
+  // The surface is a wavy 3D mesh at Y = 15. The depth buffer selects
+  // the wave closest to the camera, avoiding jumps between multiple
+  // possible intersections when viewing almost horizontally along the surface.
   const waterUniforms = {
     time: { value: 0 }, aspect: { value: 1 },
     resolution: { value: new T.Vector2(1,1) }, surfacePass: { value: 0 },
@@ -65,10 +65,10 @@
     sunPower: { value: 1 }, daylight: { value: 1 }, twilight: { value: 0 }
   };
 
-  // En rolig, visuel døgnrytme følger computerens lokale ur. Solen står op
-  // kl. 06 og går ned kl. 18; dens højeste vinkel er 65 grader kl. 12.
-  // Dette er en fast kunstnerisk døgnkurve, ikke en sted-/årstidsberegning.
-  // Den faktiske klokke bruges uafhængigt af skyderen for svømmehastighed.
+  // A gentle visual day cycle follows the computer's local clock. Sunrise
+  // is at 06:00 and sunset at 18:00, with a peak elevation of 65 degrees at noon.
+  // This is a fixed artistic cycle, not a location- or season-based calculation.
+  // The clock is independent of the swimming speed slider.
   const sunriseColor = new T.Color(0xff633b);
   const middayColor = new T.Color(0xfff1d8);
   const dayFogColor = new T.Color(0x073653);
@@ -91,8 +91,8 @@
     waterUniforms.solarDirection.value.set(Math.cos(elevation)*Math.sin(azimuth),
       Math.sin(elevation), -Math.cos(elevation)*Math.cos(azimuth));
 
-    // Snells lov bøjer stråler fra luften mod normalen, når de går ned i
-    // vandet. Lys på hajerne og strålernes forsvindingspunkt deler retning.
+    // Snell's law bends rays from the air towards the normal as they enter
+    // the water. Shark illumination and the beam vanishing point share a direction.
     const air = waterUniforms.solarDirection.value;
     const eta = 1.00029/1.333;
     waterUniforms.lightDirection.value.set(air.x*eta,
@@ -125,8 +125,8 @@
       uniform float daylight;
       uniform float twilight;
       float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
-      // Kvintisk interpoleret støj med analytiske afledte. Værdien og
-      // hældningen er kontinuerte, også når en bølge krydser en støjcelle.
+      // Quintic interpolated noise with analytical derivatives. Both the value
+      // and slope remain continuous when a wave crosses a noise cell.
       vec3 noiseGradient(vec2 p){
         vec2 cell=floor(p),f=fract(p);
         vec2 u=f*f*f*(f*(f*6.-15.)+10.);
@@ -139,10 +139,10 @@
       }
       float noise(vec2 p){return noiseGradient(p).x;}
 
-      // Ti bølgetog med forskellige retninger, bølgelængder og faser har
-      // ingen fælles kort gentagelsesperiode. En langsomt varierende amplitude
-      // gør også bølgegrupperne uens. Dispersionen følger omega = sqrt(g*k).
-      // Gradienterne stammer fra præcis samme højdefelt som geometrien.
+      // Ten wave trains with different directions, wavelengths and phases have
+      // no shared short repetition period. A slowly varying amplitude also
+      // makes wave groups uneven. Dispersion follows omega = sqrt(g*k).
+      // Gradients come from exactly the same height field as the geometry.
       vec3 waveField(vec2 p,float footprint){
         vec3 weather=noiseGradient(p*.037+vec2(time*.005,-time*.003));
         float envelope=.68+weather.x*.32;
@@ -163,10 +163,10 @@
         return vec3(field.x*envelope,field.yz*envelope+field.x*envelopeGradient);
       }
 
-      // Eksakt upolariseret Fresnel for lys set FRA vand MOD luft.
-      // Snells lov afgør totalrefleksion. Ved vinkelret indfald er R ca. 2 %;
-      // over den kritiske vinkel ca. 48,6 grader reflekteres alt lyset.
-      // Kilde og afgrænsning af miljømodellen er beskrevet i LAES-MIG.md.
+      // Exact unpolarised Fresnel for light viewed FROM water TOWARDS air.
+      // Snell's law determines total internal reflection. Normal incidence gives R around 2%;
+      // above the critical angle of about 48.6 degrees, all light is reflected.
+      // The reference and limitations of the environment model are in GUIDE.md.
       float fresnelWaterToAir(float cosineIncident){
         const float waterIOR=1.333;
         const float airIOR=1.00029;
@@ -206,9 +206,9 @@
         vec3 direction=normalize((cameraWorld*vec4(view.xyz/view.w,0.)).xyz);
         vec3 color=oceanRadiance(direction);
 
-        // Homogene koordinater bevarer det fælles forsvindingspunkt, også
-        // når solen er så højt oppe, at punktet passerer gennem uendelig.
-        // Strålerne følger den brydte solretning fra morgen til aften.
+        // Homogeneous coordinates preserve the shared vanishing point, even
+        // when the sun is so high that the point passes through infinity.
+        // Beams follow the refracted solar direction from morning to evening.
         vec2 centered=(uv-.5)*vec2(aspect,1.);
         vec2 source=(solarProjection.xy-.5*solarProjection.z)*vec2(aspect,1.);
         float sourceDistance=max(length(source),.0001);
@@ -231,9 +231,9 @@
         color+=sunColor*rayStrength*depthFade*sunPower*.052;
         color+=vec3(.003,.012,.024)*depthFade*daylight;
 
-        // Samme shader bruges til baggrunden og den faktiske vandoverflade.
-        // Højdefeltet flytter nettets punkter; den analytiske normal beholder
-        // de små detaljer. Pixelaftrykket dæmper bølger mindre end en pixel.
+        // The same shader renders the background and the actual water surface.
+        // The height field moves mesh vertices; the analytical normal retains
+        // fine detail. The pixel footprint attenuates waves smaller than one pixel.
         float footprint=max(length(dFdx(surfaceWorldPosition.xz)),length(dFdy(surfaceWorldPosition.xz)));
         if(surfacePass>.5){
           float distanceToSurface=length(surfaceWorldPosition-eyePosition);
@@ -242,7 +242,7 @@
           float cosineIncident=max(dot(direction,surfaceNormal),0.);
           float reflectance=fresnelWaterToAir(cosineIncident);
           vec3 reflectedDirection=reflect(direction,surfaceNormal);
-          // Totalrefleksion viser vandmiljøet, ikke en vilkårlig sølvfarve.
+          // Total internal reflection shows the water environment, not an arbitrary silver colour.
           vec3 reflectedLight=oceanRadiance(reflectedDirection)*1.25;
           vec3 transmittedLight=vec3(0.);
           if(reflectance<1.){
@@ -256,7 +256,7 @@
           float visibility=1.-smoothstep(105.,165.,distanceToSurface);
           color=mix(color,ceiling,visibility);
         }
-        // Farver blandes som lys ovenfor og omregnes først her til skærmfarver.
+        // Colours are mixed as light above and converted to display colours only here.
         color=pow(max(vec3(0.),1.-exp(-color*1.3)),vec3(1./2.2));
         float grain=(hash(gl_FragCoord.xy)-.5)/255.;
         gl_FragColor=vec4(color+grain,1.);
@@ -266,8 +266,8 @@
   background.add(new T.Mesh(new T.PlaneGeometry(2, 2), waterMaterial));
   const backgroundCamera = new T.Camera();
 
-  // Bølgematematikken genbruges ordret i vertex-shaderen, så højder og
-  // normalen i lysberegningen ikke kan komme ud af takt.
+  // Wave mathematics is reused verbatim in the vertex shader so heights and
+  // the normal used for lighting cannot drift out of sync.
   const waveFunctions=waterMaterial.fragmentShader.slice(
     waterMaterial.fragmentShader.indexOf('float hash('),
     waterMaterial.fragmentShader.indexOf('float fresnelWaterToAir(')
@@ -292,8 +292,8 @@
   waterSurface.frustumCulled=false;
   scene.add(waterSurface);
 
-  // Modellen peger langs +X. Tværsnit giver en glat krop med en smal halerod.
-  // Farver følger bug/ryg, så kroppens tredimensionelle form kan læses i blåt lys.
+  // The model points along +X. Cross-sections form a smooth body with a narrow tail base.
+  // Belly and back colours make the three-dimensional shape readable in blue light.
   const parts = [];
   let bodyProfile;
   const backColor = new T.Color(0x5c6a70);
@@ -307,7 +307,7 @@
     for (let i = 0; i < positions.count; i++) {
       if (solidColor !== undefined) color.setHex(solidColor);
       else {
-        // Ujævnt, men sammenhængende skel mellem grå ryg og elfenbensfarvet bug.
+        // An uneven but continuous boundary between the grey back and ivory belly.
         const edge = Math.sin(positions.getX(i)*11+positions.getZ(i)*8)*.047
           +Math.sin(positions.getX(i)*24-positions.getZ(i)*13)*.022;
         const underside = T.MathUtils.smoothstep(-normals.getY(i)+edge, .14, .36)
@@ -319,13 +319,13 @@
       colors.set([color.r, color.g, color.b], i * 3);
     }
     flat.setAttribute('color', new T.BufferAttribute(colors, 3));
-    // Øjne, mund og gæller får glatte overflader; kun huden får mikrotekstur.
+    // Eyes, mouth and gills have smooth surfaces; only skin receives microtexture.
     flat.setAttribute('skinDetail', new T.BufferAttribute(new Float32Array(positions.count).fill(solidColor === undefined ? 1 : 0), 1));
     parts.push(flat);
     if (flat !== geometry) geometry.dispose();
   }
   function bodyGeometry() {
-    // X-position, halv bredde og halv højde. Fyldigere forkrop og smal halerod.
+    // X position, half-width and half-height. A fuller forebody and narrow tail base.
     const sections = [
       [-3.52,.035,.06],[-3.18,.09,.13],[-2.8,.15,.22],
       [-2.3,.235,.30],[-1.7,.36,.41],[-.85,.51,.55],
@@ -355,8 +355,8 @@
   }
   addPart(bodyGeometry());
 
-  // Find et punkt på samme tværsnit som kroppens net. Små detaljer lægges
-  // præcist på huden, så gællerne hverken svæver eller forsvinder.
+  // Find a point on the same cross-section as the body mesh. Small details
+  // sit precisely on the skin, so the gills neither float nor disappear.
   function bodySurface(x,angle,side,offset=.006){
     let low=0,high=1;
     for(let i=0;i<16;i++){
@@ -367,16 +367,16 @@
     return new T.Vector3(x,(section.z+offset)*Math.cos(angle),side*(section.y+offset)*Math.sin(angle));
   }
 
-  // Hammeren er en afrundet vinge på tværs af kroppen, med øjne yderst.
-  // Den buede forkant og de tynde ender giver den karakteristiske hovedsilhuet.
+  // The hammer is a rounded wing across the body, with eyes at the tips.
+  // Its curved leading edge and thin tips create the characteristic head silhouette.
   function hammerGeometry() {
     const vertices=[],indices=[],rings=96,sides=40;
     for(let i=0;i<=rings;i++) {
       const z=(i/rings*2-1)*1.78;
       const lateral=Math.abs(z)/1.78;
       const cap=Math.sqrt(Math.max(.003,1-Math.pow(lateral,24)));
-      // En lav indskæring i midten og to mindre på hver side giver en
-      // organisk forkant. Bagkanten møder den brede nakke uden et rørformet næb.
+      // A shallow central notch and two smaller side notches form an
+      // organic leading edge. The trailing edge meets the broad neck without a tubular snout.
       const front=2.55-.075*Math.exp(-z*z/.035)
         -.065*Math.exp(-Math.pow(Math.abs(z)-.93,2)/.022)-.18*Math.pow(lateral,4);
       const rear=1.95-.36*Math.exp(-lateral*4)+.045*lateral;
@@ -399,9 +399,9 @@
   }
   addPart(hammerGeometry());
 
-  // Finner bygges af glatte, vingelignende tværsnit frem for flade trekanter.
-  // Hvert tværsnit angiver spændvidde, forkant og bagkant. Et tyndt elliptisk
-  // profil giver afrundet forkant, spids afslutning og en buet overflade.
+  // Fins use smooth, wing-like cross-sections instead of flat triangles.
+  // Each cross-section defines span, leading edge and trailing edge. A thin elliptical
+  // profile gives a rounded front, pointed tip and curved surface.
   function sweptFin(sections, horizontal=false, side=1, thickness=.09) {
     const curve=new T.CatmullRomCurve3(sections.map(s=>new T.Vector3(...s)));
     const vertices=[],indices=[],centers=[];
@@ -427,8 +427,8 @@
     const geometry=new T.BufferGeometry();
     geometry.setAttribute('position',new T.Float32BufferAttribute(vertices,3));
     geometry.setIndex(indices);geometry.computeVertexNormals();
-    // Samme funktion bruges til både venstre/højre og øvre/nedre finner.
-    // Kontroller retningen mod tværsnittets centrum, så huden altid vender udad.
+    // The same function creates left/right and upper/lower fins.
+    // Check the direction against the cross-section centre so the skin always faces outwards.
     const p=geometry.attributes.position,n=geometry.attributes.normal;
     let outward=0;
     for(let i=1;i<rings;i++){
@@ -448,7 +448,7 @@
   }
   sweptFin([[.22,-2.17,-2.80],[.45,-2.33,-2.64],[.66,-2.49,-2.50]],false,1,.15);
   sweptFin([[-.15,-2.53,-3.0],[-.38,-2.73,-2.96],[-.54,-2.96,-2.97]],false,1,.15);
-  // To adskilte, sammenhængende halelapper bevarer den dybe kløft i halen.
+  // Two separate, continuous tail lobes preserve the deep fork in the tail.
   sweptFin([[.00,-3.30,-4.08],[.40,-3.53,-4.11],[.88,-3.83,-4.31],[1.36,-4.15,-4.48],[1.95,-4.68,-4.69]],false,1,.15);
   sweptFin([[.02,-3.31,-4.08],[-.36,-3.57,-4.12],[-.70,-3.90,-4.30],[-1.10,-4.35,-4.36]],false,1,.15);
 
@@ -464,7 +464,7 @@
     glint.translate(2.255,.074,side*1.865); addPart(glint,0xd6e5df);
     const nostril=new T.SphereGeometry(1,16,10);
     nostril.scale(.065,.012,.027);nostril.translate(2.37,-.102,side*1.37);addPart(nostril,0x38474a);
-    // Fem gællespalter på hver side af kroppen.
+    // Five gill slits on each side of the body.
     for(let g=0;g<5;g++) {
       const x=1.35-g*.119;
       const gillPoints=Array.from({length:13},(_,i)=>{
@@ -491,7 +491,7 @@
   const lowerLip=mouth.clone();lowerLip.points.forEach(p=>{p.x-=.025;p.y-=.006;});
   addPart(new T.TubeGeometry(lowerLip,36,.009,6,false),0xb6c0b8);
 
-  // Saml alle dele i én geometri. Hver haj kræver dermed kun ét tegnekald.
+  // Merge all parts into one geometry so each shark needs only one draw call.
   function mergeParts(geometries) {
     const merged=new T.BufferGeometry();
     for(const attribute of ['position','normal','color','skinDetail']) {
@@ -504,7 +504,7 @@
       merged.setAttribute(attribute,new T.BufferAttribute(values,attribute==='skinDetail'?1:3));
     }
     merged.computeBoundingSphere();
-    // Svømningen bøjer halen uden for den oprindelige afgrænsning.
+    // Swimming bends the tail beyond the original bounding volume.
     merged.boundingSphere.radius+=1.4;
     geometries.forEach(g=>g.dispose());
     return merged;
@@ -535,7 +535,7 @@
         float elasticWeight(float x){float tail=clamp((1.8-x)/6.2,0.,1.2);return tail*tail;}
         float elasticSlope(float x){return (elasticWeight(x+.01)-elasticWeight(x-.01))/.02;}
         ${shader.vertexShader}`;
-      // Normalerne drejes med overfladen, så lyset følger den bølgende hale.
+      // Normals turn with the surface so lighting follows the moving tail.
       shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>',
         '#include <beginnormal_vertex>\nobjectNormal.x-=bendSlope(position.x)*objectNormal.z+elasticSlope(position.x)*dot(dragBend,objectNormal.yz);');
       shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',
@@ -546,8 +546,8 @@
         sharkDetail=skinDetail;
         sharkWorldPosition=(modelMatrix*vec4(transformed,1.)).xyz;
         sharkWorldNormal=normalize(mat3(modelMatrix)*objectNormal);`);
-      // Procedural hud følger modellen, ikke skærmen. Farvevariation, fine
-      // hudtænder og ujævn glans bevarer detaljerne uden eksterne billedfiler.
+      // Procedural skin follows the model, not the screen. Colour variation, fine
+      // denticles and uneven gloss preserve detail without external image files.
       shader.fragmentShader=`
         uniform float waterTime;
         uniform vec3 sunColor;
@@ -589,7 +589,7 @@
         normal=normalize(abs(determinant)*normal-skinGradient);
       `);
       shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`
-        // Bølgernes lysnet bevæger sig over ryggen og finnernes overside.
+        // Wave caustics move across the back and the upper surfaces of the fins.
         vec2 causticPosition=sharkWorldPosition.xz*.61;
         float causticField=skinNoise(vec3(causticPosition+vec2(waterTime*.09,-waterTime*.06),waterTime*.055));
         float causticLine=pow(1.-abs(causticField*2.-1.),16.);
@@ -600,8 +600,8 @@
     };
     const mesh=new T.Mesh(sharkGeometry,material);
     mesh.name='hammerhead';
-    // Treffet beregnes på samme bøjede overflade som den, der vises. Three.js
-    // bruger denne metode ved raycasting, så også en bevægelig hale kan gribes.
+    // Picking uses the same bent surface that is displayed. Three.js
+    // calls this method during raycasting, so a moving tail can also be grabbed.
     mesh.getVertexPosition=function(index,target){
       T.Mesh.prototype.getVertexPosition.call(this,index,target);
       const tail=T.MathUtils.clamp((1.8-target.x)/6.2,0,1.2);
@@ -615,8 +615,8 @@
       offset:new T.Vector3(),velocity:new T.Vector3(),
       rotationOffset:new T.Quaternion(),angularVelocity:new T.Vector3()});
   }
-  // Asymmetriske baner og forskellige omløbstider undgår synkron bevægelse.
-  // Der er ingen synlige genstarter: hajerne følger sammenhængende kurver.
+  // Asymmetric paths and different orbit periods avoid synchronised movement.
+  // There are no visible restarts: sharks follow continuous curves.
   const configurations=[
     {scale:1.22,rx:14,rz:24,z:-10,y:1.6,phase:-.62,rate:.023,direction:1},
     {scale:1.02,rx:23,rz:10,z:-10,y:4.8,phase:1.9,rate:.023,direction:-1},
@@ -632,13 +632,13 @@
     {scale:.95,rx:35,rz:11,z:-56,y:8,phase:4.7,rate:.018,direction:1}
   ];
   configurations.forEach(createShark);
-  // Et fjernt, løst følge giver havet skala uden at fylde forgrunden.
+  // A distant, loose group gives the ocean scale without crowding the foreground.
   for(let i=0;i<9;i++) createShark({scale:.57+(i%3)*.1,rx:32,rz:7,z:-62-(i%3)*4,
     y:4+Math.sin(i*2.3)*6,phase:1.8+i*.12,rate:.014,direction:1});
 
-  // Ekstra hajer oprettes kun første gang, der er brug for dem. De deler
-  // modellen og skjules/genbruges, når skyderen trækkes frem og tilbage.
-  // Dermed skabes der højst 40 hajer, uanset hvor længe siden kører.
+  // Extra sharks are created only when first needed. They share the model
+  // and are hidden/reused as the slider moves back and forth.
+  // This creates at most 40 sharks, regardless of how long the page runs.
   const sharkCountInput=document.getElementById('shark-count');
   function setSharkCount(value){
     const count=T.MathUtils.clamp(Math.round(Number(value)),0,40);
@@ -654,8 +654,8 @@
     redrawNeeded=true;
   }
 
-  // Små svævende partikler er enkelte punkter på grafikkortet. Tågen dæmper
-  // dem med afstanden, og deres positioner genbruges gennem hele kørslen.
+  // Small drifting particles are individual GPU points. Fog attenuates
+  // them with distance, and their positions are reused throughout the run.
   const particleCount=950;
   const particlePositions=new Float32Array(particleCount*3);
   const particleSizes=new Float32Array(particleCount);
@@ -688,7 +688,7 @@
   const particles=new T.Points(particleGeometry,particleMaterial);
   particles.frustumCulled=false;scene.add(particles);
 
-  // Små fisk i baggrunden bruger instanser: mange fisk, ét tegnekald.
+  // Background fish use instancing: many fish, one draw call.
   const fishGeometry=new T.ConeGeometry(.11,.58,4);
   fishGeometry.rotateZ(-Math.PI/2);
   const fishMaterial=new T.MeshStandardMaterial({color:0x5a899e,roughness:.8});
@@ -727,9 +727,9 @@
   let gripDepth=0,depthDirection=0,gripTorque=0;
   let heldShark=null,heldPointer=null,lastSharkGrab=-Infinity;
 
-  // Markøren vælger en synsstråle. Højre knap trækker kontaktpunktet mod
-  // kameraet; venstre skubber det længere ud i vandet. Musens bevægelse
-  // styrer samtidig til siderne. Kontaktpunktet følger hajens rotation.
+  // The pointer selects a viewing ray. The right button pulls the contact point towards
+  // the camera; the left pushes it deeper into the water. Mouse motion also
+  // steers sideways. The contact point follows the shark's rotation.
   function pointerRay(event){
     const rect=canvas.getBoundingClientRect();
     dragNdc.set((event.clientX-rect.left)/rect.width*2-1,
@@ -755,8 +755,8 @@
     gripLocal.copy(hits[0].point);heldShark.mesh.worldToLocal(gripLocal);
     gripDepth=hits[0].distance;
     depthDirection=event.pointerType==='touch'?0:(event.button===2?-1:1);
-    // En blød zone omkring kropsmidten gør almindelig flytning let, mens
-    // hoved, hale og finner fungerer som tydelige arme for drejekraften.
+    // A soft zone around the body centre makes translation easy, while
+    // the head, tail and fins provide clear lever arms for torque.
     gripTorque=T.MathUtils.smoothstep(gripLocal.length(),.8,1.55);
     canvas.setPointerCapture(event.pointerId);
     canvas.classList.add('grabbing');
@@ -768,8 +768,8 @@
     pointerRay(event);
     redrawNeeded=true;
   });
-  // Browsermenuen ville afbryde højreknappens træk. Betjening uden for
-  // havets lærred beholder browserens normale højreklik.
+  // The browser menu would interrupt right-button dragging. Controls outside
+  // the ocean canvas retain normal browser context menus.
   canvas.addEventListener('contextmenu',event=>event.preventDefault());
   for(const eventName of ['pointerup','pointercancel','lostpointercapture']){
     canvas.addEventListener(eventName,event=>{if(event.pointerId===heldPointer)releaseShark();});
@@ -780,7 +780,7 @@
     renderer.setSize(width,height,false);
     renderer.getDrawingBufferSize(waterUniforms.resolution.value);
     camera.aspect=width/height;
-    // Portrætformat får lidt bredere synsfelt, så hele hajer stadig kan ses.
+    // Portrait layouts get a wider field of view so whole sharks remain visible.
     camera.fov=camera.aspect<.85?62:49;
     camera.updateProjectionMatrix();
     waterUniforms.aspect.value=width/height;
@@ -802,8 +802,8 @@
       gripDepth=T.MathUtils.clamp(gripDepth+depthDirection*4*elapsed,8,135);
       raycaster.ray.at(gripDepth,dragTarget);
     }
-    // Projektér en retning (w = 0) i stedet for et vilkårligt punkt tæt på
-    // kameraet. Perspektivet giver et fælles punkt for parallelle solstråler.
+    // Project a direction (w = 0) instead of an arbitrary point near
+    // the camera. Perspective gives parallel sunbeams a shared vanishing point.
     const light=waterUniforms.lightDirection.value;
     projectedSun.set(light.x,light.y,light.z,0)
       .applyMatrix4(camera.matrixWorldInverse).applyMatrix4(camera.projectionMatrix);
@@ -821,9 +821,9 @@
       shark.mesh.rotateX(Math.sin(phase)*.20*shark.direction+Math.sin(animationTime*.11+shark.phase)*.055);
       shark.mesh.rotateZ(Math.cos(phase*2+shark.phase)*.045);
       baseRotation.copy(shark.mesh.quaternion);
-      // Kraften på kontaktpunktet flytter kroppen og giver et drejemoment
-      // r kryds F. En aflang krop har mindre træghed omkring længdeaksen.
-      // Små deltrin og vandmodstand dæmper både translation og rotation.
+      // Force at the contact point moves the body and produces torque
+      // r cross F. An elongated body has less inertia around its longitudinal axis.
+      // Small substeps and water resistance damp both translation and rotation.
       const steps=Math.max(1,Math.ceil(elapsed*120)),dt=elapsed/steps;
       for(let step=0;step<steps;step++){
         shark.mesh.quaternion.copy(baseRotation).premultiply(shark.rotationOffset);
@@ -859,8 +859,8 @@
       if(shark!==heldShark && shark.angularVelocity.lengthSq()<.00001)shark.angularVelocity.set(0,0,0);
       shark.mesh.position.set(x,y,z).add(shark.offset);
       shark.mesh.quaternion.copy(baseRotation).premultiply(shark.rotationOffset);
-      // Halen giver efter modsat bevægelsen, også når man skifter retning.
-      // Deformationen filtreres, så den retter sig blødt ud efter slip.
+      // The tail yields against movement, including when direction changes.
+      // The deformation is filtered so it straightens gently after release.
       inverseRotation.copy(shark.mesh.quaternion).invert();
       localVelocity.copy(shark.velocity).applyQuaternion(inverseRotation).divideScalar(shark.scale);
       const elasticity=1-Math.exp(-8*elapsed);
@@ -890,14 +890,14 @@
   }
   function frame(now){
     animationRequest=requestAnimationFrame(frame);
-    // 40 billeder/s begrænser GPU-forbruget, men bevarer rolig, flydende bevægelse.
+    // A 40 fps cap limits GPU usage while preserving calm, fluid motion.
     if(now-lastRendered<1000/40 || contextLost) return;
     const elapsed=Math.min((now-lastFrame)/1000,.12);
     lastFrame=now; lastRendered=now;
     if(!paused){
       animationTime+=elapsed*speed;
-      // Ét sekund er tilstrækkeligt til en glidende døgnkurve. Pause fryser
-      // både bevægelse og lys; fortsættelse henter det aktuelle klokkeslæt.
+      // A one-second update interval is sufficient for the smooth day cycle. Pause freezes
+      // both movement and lighting; resuming fetches the current local time.
       if(now-lastLightingUpdate>=1000){updateDaylight(new Date());lastLightingUpdate=now;}
     }
     const interacting=heldShark || sharks.some(s=>s.mesh.visible &&
@@ -910,8 +910,8 @@
   loading.hidden=true;
   document.body.dataset.ready='true';
 
-  // Baggrundsfaner behøver ingen tegning. Scenen fortsætter uden spring,
-  // når fanen bliver synlig igen; en synlig skærm kører uden tidsbegrænsning.
+  // Hidden tabs do not need rendering. The scene resumes without jumps
+  // when the tab becomes visible again; a visible scene has no time limit.
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden)releaseShark();
     cancelAnimationFrame(animationRequest);
@@ -919,15 +919,15 @@
   });
   canvas.addEventListener('webglcontextlost',event=>{
     event.preventDefault();releaseShark();contextLost=true;
-    showError('3D-visningen blev afbrudt. Den starter igen, når browserens grafik er klar.');
+    showError('The 3D display was interrupted. It will resume when the browser graphics are ready.');
   });
   canvas.addEventListener('webglcontextrestored',()=>{contextLost=false;errorBox.hidden=true;redrawNeeded=true;lastFrame=performance.now();});
 
   const pauseButton=document.getElementById('pause');
   function updatePauseButton(){
-    document.getElementById('pause-label').textContent=paused?'Fortsæt':'Pause';
+    document.getElementById('pause-label').textContent=paused?'Resume':'Pause';
     document.getElementById('pause-icon').setAttribute('d',paused?'M8 5l11 7-11 7V5':'M9 5v14M15 5v14');
-    pauseButton.setAttribute('aria-label',paused?'Fortsæt animationen':'Sæt animationen på pause');
+    pauseButton.setAttribute('aria-label',paused?'Resume animation':'Pause animation');
     pauseButton.setAttribute('aria-pressed',String(paused));
   }
   function togglePause(){paused=!paused;lastLightingUpdate=-Infinity;redrawNeeded=true;updatePauseButton();revealControls();}
@@ -935,8 +935,8 @@
   updatePauseButton();
   document.getElementById('speed').addEventListener('input',event=>{speed=Number(event.target.value);});
 
-  // Fuldskærm kræver et klik eller tastetryk i browseren. Skærmlåsen er kun
-  // aktiv i fuldskærm og frigives igen, når fuldskærm forlades.
+  // Fullscreen requires a click or keypress. The screen wake lock is
+  // active only in fullscreen and is released when fullscreen ends.
   let wakeLock=null;
   let noticeTimer;
   function notice(message){
@@ -946,20 +946,20 @@
   }
   async function requestWakeLock(){
     if(document.fullscreenElement && 'wakeLock' in navigator && !document.hidden){
-      try{wakeLock=await navigator.wakeLock.request('screen');}catch(error){/* Browserens normale strømstyring gælder ved afslag. */}
+      try{wakeLock=await navigator.wakeLock.request('screen');}catch(error){/* Normal browser power management applies if denied. */}
     }
   }
   async function toggleFullscreen(){
     try{
       if(document.fullscreenElement) await document.exitFullscreen();
       else if(document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
-      else notice('Brug browserens fuldskærmsfunktion for at fylde skærmen.');
-    }catch(error){notice('Brug F11 i browseren for at åbne fuldskærm.');}
+      else notice('Use your browser fullscreen option to fill the screen.');
+    }catch(error){notice('Press F11 to enter browser fullscreen.');}
   }
   document.getElementById('fullscreen').addEventListener('click',toggleFullscreen);
   canvas.addEventListener('dblclick',()=>{if(performance.now()-lastSharkGrab>650)toggleFullscreen();});
   document.addEventListener('fullscreenchange',async()=>{
-    document.querySelector('#fullscreen span').textContent=document.fullscreenElement?'Luk fuldskærm':'Fuldskærm';
+    document.querySelector('#fullscreen span').textContent=document.fullscreenElement?'Exit fullscreen':'Fullscreen';
     if(document.fullscreenElement) await requestWakeLock();
     else if(wakeLock){await wakeLock.release();wakeLock=null;}
     revealControls();
