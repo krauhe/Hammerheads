@@ -2,6 +2,8 @@
 
 An interactive 3D screensaver with hammerhead sharks in a deep blue ocean. Waves, sunbeams, swimming and shark models are rendered directly in the browser using Three.js. All required files are included, so the scene also works offline.
 
+![Hammerhead sharks swimming beneath a rippling ocean surface, with sunbeams and interactive controls.](docs/screenshots/ocean.png)
+
 ## Getting started
 
 1. Download the project as a ZIP file or clone the repository.
