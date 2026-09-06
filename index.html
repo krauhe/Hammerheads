@@ -41,6 +41,14 @@
           <span>Sharks <output id="shark-count-value" for="shark-count">21</output></span>
           <input id="shark-count" type="range" min="0" max="40" step="1" value="21" aria-label="Number of hammerheads">
         </label>
+        <div class="day-controls">
+          <label for="time-mode">Lighting</label>
+          <select id="time-mode" aria-label="Lighting time mode">
+            <option value="clock">Local clock</option>
+            <option value="custom">Custom time</option>
+          </select>
+          <input id="light-time" type="time" value="12:00" aria-label="Time of day" disabled>
+        </div>
       </nav>
     </footer>
     <p class="chrome hint">Left: push · Right: pull · Grab away from the centre to turn</p>

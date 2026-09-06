@@ -24,12 +24,15 @@ No installation, server or build step is required. This is a browser screensaver
 6. **Pull:** Hold the right mouse button on a shark to pull it closer. Move the mouse to steer sideways at the same time.
 7. **Turn:** Grab the head, tail or fins. Force near the body centre mainly moves the shark; force farther from the centre also rotates it.
 8. **Touch:** Drag with one finger to move a shark in the screen plane and turn it.
+9. **Time of day:** Under Lighting, choose Local clock to follow your computer, or Custom time to set any hour and minute. Lighting changes also work while paused.
 
-Sharks follow with elastic motion and retain some momentum and rotation after release. You can also move them while paused. Controls fade out after inactivity and reappear with mouse, touch or keyboard input.
+Sharks follow with elastic motion and retain some momentum and rotation after release. You can also move them while paused. All text and controls fade out after 5 seconds of inactivity, including after using a slider. Mouse, touch or keyboard input reveals them again.
 
 ## Ocean and lighting
 
 Lighting follows your computer's local clock and turns orange-red at low sun angles. The visual day cycle uses sunrise at 06:00, the highest sun at 12:00 and sunset at 18:00. It does not calculate the sun's position from your location or the season.
+
+At night, stars shimmer through the refracting surface and soft blue starlight keeps the sharks visible. Starlight brightness is artistically enhanced for visibility.
 
 Surface reflection and refraction depend on the viewing angle, wave slope and the refractive index of water. The sky, underwater environment and sunbeams are simplified visual models. See the [detailed guide](GUIDE.md).
 

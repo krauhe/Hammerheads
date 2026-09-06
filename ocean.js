@@ -48,6 +48,14 @@
   const rim = new T.DirectionalLight(0x62b5dc, 1.65);
   rim.position.set(-7, 16, -30);
   scene.add(rim);
+  // A broad overhead fill represents combined starlight. Its brightness is
+  // intentionally boosted for visibility rather than astronomical accuracy.
+  const starlight=new T.DirectionalLight(0x9bbcff,0);
+  starlight.position.set(-12,60,-20);
+  scene.add(starlight);
+  const timeMode=document.getElementById('time-mode');
+  const lightTime=document.getElementById('light-time');
+  let customHour=12;
 
   // The surface is a wavy 3D mesh at Y = 15. The depth buffer selects
   // the wave closest to the camera, avoiding jumps between multiple
@@ -72,11 +80,16 @@
   const sunriseColor = new T.Color(0xff633b);
   const middayColor = new T.Color(0xfff1d8);
   const dayFogColor = new T.Color(0x073653);
-  const nightFogColor = new T.Color(0x020c20);
+  const nightFogColor = new T.Color(0x082340);
   const projectedSun = new T.Vector4();
   function updateDaylight(date) {
-    const hour = date.getHours() + date.getMinutes()/60
+    const customTime=timeMode.value==='custom';
+    const parts=lightTime.value.split(':').map(Number);
+    // Keep the last valid setting while a time field is temporarily empty.
+    if(customTime && /^\d{2}:\d{2}$/.test(lightTime.value))customHour=parts[0]+parts[1]/60;
+    const hour = customTime ? customHour : date.getHours() + date.getMinutes()/60
       + date.getSeconds()/3600 + date.getMilliseconds()/3600000;
+    if(!customTime)lightTime.value=String(date.getHours()).padStart(2,'0')+':'+String(date.getMinutes()).padStart(2,'0');
     const phase = (hour-6)*Math.PI/12;
     const elevation = T.MathUtils.degToRad(65)*Math.sin(phase);
     const azimuth = T.MathUtils.degToRad(-75)*Math.cos(phase);
@@ -100,8 +113,9 @@
     sun.position.copy(waterUniforms.lightDirection.value).multiplyScalar(100);
     sun.color.copy(waterUniforms.sunColor.value);
     sun.intensity = 3.5*sunPower;
-    ambient.intensity = .22+1.53*daylight;
-    rim.intensity = .14+1.51*daylight;
+    ambient.intensity = 1.35+.40*daylight;
+    rim.intensity = .95+.70*daylight;
+    starlight.intensity = 1.65*(1-daylight);
     scene.fog.color.copy(nightFogColor).lerp(dayFogColor, daylight);
   }
   const waterMaterial = new T.ShaderMaterial({
@@ -182,19 +196,30 @@
 
       vec3 oceanRadiance(vec3 direction){
         float elevation=pow(clamp(direction.y*.85+.54,0.,1.),2.);
-        return mix(vec3(.0004,.003,.013),vec3(.010,.078,.17),elevation)*(.10+.90*daylight);
+        return mix(vec3(.0004,.003,.013),vec3(.010,.078,.17),elevation)*(.50+.50*daylight);
       }
       vec3 skyRadiance(vec3 direction){
         float elevation=clamp(direction.y,0.,1.);
         vec3 horizon=mix(vec3(.23,.32,.38),vec3(.58,.16,.065),twilight);
         vec3 zenith=mix(vec3(.10,.25,.43),vec3(.10,.10,.22),twilight*.65);
         vec3 sky=mix(horizon,zenith,sqrt(elevation))*daylight;
-        sky+=vec3(.002,.006,.017)*(1.-daylight);
+        sky+=vec3(.013,.026,.061)*(1.-daylight);
         vec2 cloudPosition=direction.xz/max(.20,direction.y)*1.35;
         float clouds=noise(cloudPosition+vec2(time*.002,0.))*.65
           +noise(cloudPosition*2.23+vec2(7.3,time*.003))*.35;
         vec3 cloudLight=mix(vec3(.54,.59,.61),sunColor*.48,twilight)*daylight;
-        sky=mix(sky,cloudLight+vec3(.001,.003,.009)*(1.-daylight),smoothstep(.49,.77,clouds)*.55);
+        float cloudCover=smoothstep(.49,.77,clouds);
+        sky=mix(sky,cloudLight+vec3(.010,.021,.045)*(1.-daylight),cloudCover*.55);
+        // Fixed stars live in sky directions, so wave refraction makes their
+        // highlights shimmer naturally. Pixel derivatives soften tiny stars.
+        vec2 starCoordinates=vec2(atan(direction.z,direction.x),asin(clamp(direction.y,-1.,1.)))*40.;
+        vec2 starCell=floor(starCoordinates);
+        vec2 starCentre=vec2(hash(starCell+13.7),hash(starCell+81.2))*.6+.2;
+        float starDistance=length(fract(starCoordinates)-starCentre);
+        float starPixel=clamp(length(fwidth(starCoordinates)),.025,.3);
+        float star=1.-smoothstep(.07,.14+starPixel,starDistance);
+        star*=step(.97,hash(starCell))*smoothstep(0.,.15,direction.y);
+        sky+=vec3(.72,.83,1.)*star*2.5*(1.-daylight)*(1.-cloudCover*.8);
         float alignment=max(dot(direction,solarDirection),0.);
         sky+=sunColor*sunPower*(pow(alignment,28.)*.40+pow(alignment,1300.)*4.);
         return sky;
@@ -707,6 +732,15 @@
   let animationRequest=0;
   let contextLost=false;
   let redrawNeeded=true;
+  function changeLightingTime(){
+    lightTime.disabled=timeMode.value!=='custom';
+    if(!lightTime.disabled && !/^\d{2}:\d{2}$/.test(lightTime.value))return;
+    updateDaylight(new Date());
+    redrawNeeded=true;
+    revealControls();
+  }
+  timeMode.addEventListener('change',changeLightingTime);
+  lightTime.addEventListener('input',changeLightingTime);
   setSharkCount(sharkCountInput.value);
   sharkCountInput.addEventListener('input',event=>setSharkCount(event.target.value));
   const pointer=new T.Vector2();
@@ -971,7 +1005,7 @@
     document.body.classList.remove('immersed');
     clearTimeout(hideTimer);
     hideTimer=setTimeout(()=>{
-      if(heldShark || !errorBox.hidden || document.querySelector('.controls :focus-visible'))return;
+      if(heldShark || !errorBox.hidden)return;
       document.body.classList.add('immersed');
     },5000);
   }
@@ -980,6 +1014,8 @@
     revealControls();
   },{passive:true});
   document.addEventListener('pointerdown',revealControls,{passive:true});
+  document.addEventListener('input',revealControls);
+  document.addEventListener('change',revealControls);
   document.addEventListener('keydown',event=>{
     revealControls();
     if(event.repeat || event.ctrlKey || event.metaKey || event.altKey)return;
