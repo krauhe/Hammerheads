@@ -1,4 +1,6 @@
-/* Havet fylder hele vinduet. Diskret betjening forsvinder efter inaktivitet. */
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Kristian R. Harreby. Licensvilkår findes i LICENSE.
+ * Havet fylder hele vinduet. Diskret betjening forsvinder efter inaktivitet. */
 :root { color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; color: #deedf3; background: #031b35; }
 * { box-sizing: border-box; }
 html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }

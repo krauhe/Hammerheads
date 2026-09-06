@@ -1,4 +1,7 @@
 /*
+ * SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 Kristian R. Harreby. Licensvilkår findes i LICENSE.
+ *
  * Det blå dyb: en selvstændig, uendelig WebGL-scene med modellerede hammerhajer.
  * Three.js ligger lokalt. Ingen billeder, netkald, server eller installation kræves.
  * Hajernes geometri genbruges. Vand og svømning beregnes på grafikkortet, så

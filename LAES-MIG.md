@@ -22,3 +22,5 @@ Himlen, det reflekterede havmiljø og lysstrålerne er forenklede visuelle model
 Siden er en pauseskærm i browseren. Den installerer sig ikke som Windows-pauseskærm eller skrivebordsbaggrund. En skjult browserfane holder pause med at tegne og fortsætter automatisk, når den bliver synlig igen. I fuldskærm forsøger siden at holde skærmen tændt, hvis browseren tillader det. Ved indstillingen reduceret bevægelse starter scenen på pause; klik Fortsæt for at starte den.
 
 Modeller, lys og bevægelse er lavet til denne scene. 3D-motoren er Three.js r160 (MIT-licens, se THREE-LICENSE).
+
+Hammerhajer er open source under GNU General Public License v3.0 (GPLv3), ligesom T1D Simulator. Copyright © 2026 Kristian R. Harreby. De fulde vilkår findes i LICENSE. Three.js beholder sin separate MIT-licens i THREE-LICENSE.

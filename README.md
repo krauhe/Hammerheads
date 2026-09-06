@@ -41,3 +41,11 @@ Overfladens refleksion og brydning afhænger af synsvinklen, bølgens hældning 
 | `LAES-MIG.md` | Brugervejledning og tekniske afgrænsninger |
 
 Scenen er lydløs og foretager ingen netkald. En skjult fane holder pause med at tegne. Hvis systemet er indstillet til reduceret bevægelse, starter scenen på pause.
+
+## Licens
+
+Hammerhajer er open source under **GNU General Public License v3.0 (GPLv3)**, samme licens som T1D Simulator. Se [LICENSE](LICENSE) for de fulde vilkår.
+
+Copyright © 2026 Kristian R. Harreby.
+
+Det medfølgende Three.js-bibliotek har sin egen MIT-licens, som er bevaret i [THREE-LICENSE](THREE-LICENSE).
