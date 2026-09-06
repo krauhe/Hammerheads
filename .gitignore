@@ -1,0 +1,10 @@
+# Lokale browserkontroller og billeder indgår ikke i udgivelsen.
+validation/
+
+# Lokale editor- og systemfiler.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.zip

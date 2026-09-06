@@ -1,0 +1,60 @@
+/* Havet fylder hele vinduet. Diskret betjening forsvinder efter inaktivitet. */
+:root { color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; color: #deedf3; background: #031b35; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+#ocean { position: relative; width: 100%; height: 100%; isolation: isolate; }
+#scene { display: block; width: 100%; height: 100%; touch-action: none; }
+#scene.grabbing { cursor: grabbing; }
+#scene.pushing { cursor: move; }
+.vignette { pointer-events: none; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, transparent 30%, #000b2270 100%); }
+.chrome { transition: opacity 1.5s ease, transform 1.5s ease; }
+.title { position: absolute; left: 5%; top: 7%; pointer-events: none; text-shadow: 0 2px 30px #00112a80; }
+.eyebrow { display: flex; align-items: center; gap: 11px; font-size: 10px; letter-spacing: .25em; color: #9abfcd; }
+.live-dot { width: 5px; height: 5px; border-radius: 50%; background: #80c8c8; box-shadow: 0 0 13px #8eeeff70; }
+h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(40px, 4.8vw, 74px); font-weight: 400; letter-spacing: -.045em; margin: 17px 0 8px; }
+h1 span { color: #7cafbd; }
+.title p { margin: 0; color: #8faebf; font-size: 13px; letter-spacing: .07em; }
+footer { position: absolute; bottom: 8%; left: 5%; right: 5%; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.caption { display: flex; align-items: center; gap: 16px; color: #89a8ba; font: italic 15px Georgia, serif; }
+.line { width: 32px; height: 1px; background: #82abbc66; }
+.controls { display: flex; align-items: center; gap: 4px; padding: 7px; border: 1px solid #91c5df22; border-radius: 18px; background: #061c3566; backdrop-filter: blur(24px); }
+button { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 42px; padding: 0 14px; border: 0; border-radius: 11px; color: #bad1dc; background: transparent; font: 12px "Segoe UI", system-ui, sans-serif; cursor: pointer; transition: background .2s, color .2s; }
+button:hover { color: white; background: #a5daff12; }
+button:focus-visible, input:focus-visible { outline: 2px solid #aee6f1; outline-offset: 3px; }
+button svg, .speed svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.speed { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 30px; border-inline: 1px solid #8eb4ce20; color: #90b2c4; }
+input[type="range"] { width: 72px; height: 28px; accent-color: #9bd1df; cursor: pointer; }
+.shark-count { display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 0 12px; border-left: 1px solid #8eb4ce20; color: #bad1dc; font-size: 12px; }
+.shark-count span { white-space: nowrap; }
+.shark-count output { display: inline-block; min-width: 2ch; margin-left: 4px; font-variant-numeric: tabular-nums; }
+.shark-count input { width: 90px; }
+.hint { position: absolute; bottom: 2.5%; width: 100%; text-align: center; color: #698ba2; font-size: 10px; letter-spacing: .035em; pointer-events: none; }
+body.immersed { cursor: none; }
+body.immersed .chrome { opacity: 0; transform: translateY(5px); pointer-events: none; }
+/* Tastaturfokus viser altid betjeningen, også når musen har været stille. */
+body.immersed:has(.controls :focus-visible) .chrome { opacity: 1; transform: none; pointer-events: auto; }
+#loading, #error { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); color: #c7e5ed; text-align: center; font-size: 14px; max-width: 440px; width: 85%; line-height: 1.7; }
+#error { background: #061c35e6; padding: 24px; border: 1px solid #91c5df33; border-radius: 18px; }
+[hidden] { display: none !important; }
+#notice { position: absolute; left: 50%; bottom: 22%; transform: translateX(-50%); border-radius: 10px; background: #031427cc; padding: 10px 16px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .3s; }
+#notice.visible { opacity: 1; }
+@media (max-width: 1050px) { .caption { display: none; } footer { justify-content: flex-end; } }
+@media (max-width: 650px) {
+  .title { left: 7%; top: 7%; }
+  .eyebrow { font-size: 8px; letter-spacing: .18em; }
+  footer { bottom: 9%; justify-content: center; left: 3%; right: 3%; }
+  .caption { display: none; }
+  .controls { padding: 5px; gap: 0; flex-wrap: wrap; width: min(100%, 340px); justify-content: space-between; }
+  button { padding: 0 11px; }
+  .speed { padding: 0 11px; gap: 8px; }
+  input[type="range"] { width: 50px; }
+  .shark-count { flex-basis: 100%; border-left: 0; border-top: 1px solid #8eb4ce20; margin-top: 4px; padding: 4px 11px 0; justify-content: space-between; }
+  .shark-count input { flex: 1; max-width: 190px; }
+  .hint { bottom: 3%; font-size: 9px; padding: 0 20px; }
+}
+@media (max-width: 360px) {
+  .controls > button { padding: 0 8px; gap: 7px; font-size: 11px; }
+  .speed { padding: 0 8px; gap: 6px; }
+  .speed input { width: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .chrome { transition: none; } }
