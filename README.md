@@ -36,6 +36,8 @@ At night, stars shimmer through the refracting surface and soft blue starlight k
 
 Surface reflection and refraction depend on the viewing angle, wave slope and the refractive index of water. The sky, underwater environment and sunbeams are simplified visual models. See the [detailed guide](GUIDE.md).
 
+Sunbeams shimmer, narrow and spread as the surface waves move. Their deflection and brightness sample the same wave field as the visible surface.
+
 ## Files
 
 | File | Contents |

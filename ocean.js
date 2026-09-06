@@ -135,6 +135,7 @@
       uniform mat4 cameraWorld;
       uniform vec3 eyePosition;
       uniform vec3 solarDirection;
+      uniform vec3 lightDirection;
       uniform vec3 solarProjection;
       uniform vec3 sunColor;
       uniform float sunPower;
@@ -243,15 +244,35 @@
         vec2 perpendicular=vec2(-axis.y,axis.x);
         float perspectiveScale=(sourceDistance-solarProjection.z*dot(centered,axis))/sourceDistance;
         float shaftCoordinate=dot(centered,perpendicular)/max(.08,perspectiveScale);
+
+        // Trace a representative scattering point back towards the surface.
+        // Sample the same world-space waves and time used by the visible mesh,
+        // rather than animating the shafts with unrelated screen-space noise.
+        vec3 scatterPoint=eyePosition+direction*32.;
+        float waterDepth=max(0.,15.-scatterPoint.y);
+        vec3 entryPoint=scatterPoint+lightDirection*(waterDepth/max(.2,lightDirection.y));
+        vec2 crossLight=normalize(vec2(lightDirection.z,-lightDirection.x)+vec2(.0001,0.));
+        vec3 entryWave=waveField(entryPoint.xz,.14);
+        vec3 nearbyWave=waveField(entryPoint.xz+crossLight*.45,.14);
+        vec3 waveNormal=normalize(vec3(-entryWave.y,1.,-entryWave.z));
+        vec3 refractedLight=-refract(-solarDirection,waveNormal,1.00029/1.333);
+        vec3 deflection=refractedLight-lightDirection;
+        vec2 screenDeflection=vec2(dot(deflection,cameraWorld[0].xyz),dot(deflection,cameraWorld[1].xyz));
+        float spread=smoothstep(0.,35.,waterDepth);
+        shaftCoordinate+=dot(screenDeflection,perpendicular)*spread*.55;
+        // Changes in wave slope approximate alternating focus and defocus.
+        // This is a lightweight volume effect, not a full photon simulation.
+        float focus=clamp(1.+dot(nearbyWave.yz-entryWave.yz,crossLight)*3.5,.35,1.8);
         float rayStrength=0.;
         for(int i=0;i<12;i++){
           float seed=float(i);
           float beamCenter=-1.3+(seed+hash(vec2(seed,3.71))*.65)*.23;
-          beamCenter+=noise(vec2(seed*6.3,time*.065))*.028;
-          float width=.012+hash(vec2(seed,7.13))*.020;
+          beamCenter+=entryWave.x*.012+sin(seed*1.73+entryWave.y*2.)*.014*spread;
+          float width=(.012+hash(vec2(seed,7.13))*.020)/sqrt(focus);
           float offset=(shaftCoordinate-beamCenter)/width;
           float beam=exp(-offset*offset*.5)+exp(-offset*offset*.085)*.045;
-          float modulation=.20+.80*noise(vec2(seed*4.71,time*.105));
+          float shimmer=.75+.25*sin(entryWave.x*3.1+dot(entryWave.yz,crossLight)*4.+seed*2.17);
+          float modulation=(.35+.65*hash(vec2(seed,4.71)))*focus*shimmer;
           rayStrength+=beam*modulation;
         }
         float depthFade=pow(clamp(uv.y+.04,0.,1.),1.35);

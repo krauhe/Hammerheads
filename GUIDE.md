@@ -17,6 +17,8 @@ Lighting follows your computer's local clock. The sun is low on the left in the 
 
 The surface combines ten wave components with different directions, wavelengths, phases and speeds, plus a slowly varying amplitude. The beam axes share a vanishing point that follows the sun's direction after refraction into the water. The same light controls shark illumination and the light patterns on their skin.
 
+The sunbeam effect traces a representative point in the water back to the surface and samples that same wave field. Local slope changes deflect the shafts and vary their width and brightness, producing moving flicker and alternating focus. The shared vanishing point sets their overall direction, while individual shafts vary with the waves. This is an approximate volume effect rather than a full simulation of light transport.
+
 Reflection uses the unpolarised Fresnel equations for water (refractive index 1.333) and air (1.00029), evaluated using the camera direction and the local wave normal. Snell's law determines refraction and the transition to total internal reflection. Reflection shows the blue underwater environment; transmitted light shows the sky. There is no fixed silver colour on the waves. Reference: [Physically Based Rendering, section 9.3](https://www.pbr-book.org/4ed/Reflection_Models/Specular_Reflection_and_Transmission). The link was checked from the local computer on 2026-09-06.
 
 The sky, reflected underwater environment and sunbeams are simplified visual models. The surface does not trace reflections of individual sharks, and the scene does not fully simulate light scattering in water.
